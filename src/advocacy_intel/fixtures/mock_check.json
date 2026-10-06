@@ -1,0 +1,82 @@
+{
+  "draft": {
+    "text": "",
+    "target_actor": "Government of Lebanon",
+    "topic": ["Judicial independence"],
+    "geography": ["Lebanon"],
+    "provenance": "model_synthesis"
+  },
+  "precedents": [
+    {
+      "recommendation": {
+        "recommendation_id": "PLACEHOLDER-001",
+        "recommendation_text": "[PLACEHOLDER, not HRW text] Parliament should adopt legislation guaranteeing the independence of the judiciary, including safeguards concerning judicial appointments and disciplinary procedures.",
+        "source_context": "[PLACEHOLDER] Section: Recommendations > To the Parliament",
+        "source_chunk_id": null,
+        "target_actor_raw": "Parliament",
+        "target_actor": "Parliament of Lebanon",
+        "action_requested": "Adopt judicial independence legislation",
+        "topic": ["Judicial independence"],
+        "geography": ["Lebanon"],
+        "publication_date": "2023-04-03",
+        "document_title": "[PLACEHOLDER, not a real HRW document]",
+        "document_type": "news_release",
+        "source_url": null
+      },
+      "matched_dimensions": ["issue", "geography"],
+      "relevance": 0.86,
+      "differences": [
+        {
+          "dimension": "target_actor",
+          "observation": "The prior recommendation was addressed to Parliament; the draft addresses 'the Lebanese authorities'. The difference may be intentional and should be reviewed by the author.",
+          "draft_quote": "The Lebanese authorities",
+          "prior_quote": "Parliament",
+          "method": "deterministic",
+          "provenance": "model_synthesis",
+          "quotes_verified": true
+        },
+        {
+          "dimension": "scope",
+          "observation": "The draft appears broader than the prior wording, which named specific safeguards.",
+          "draft_quote": "strengthen judicial independence",
+          "prior_quote": "safeguards concerning judicial appointments and disciplinary procedures",
+          "method": "llm",
+          "provenance": "for_human_review",
+          "quotes_verified": true
+        }
+      ]
+    },
+    {
+      "recommendation": {
+        "recommendation_id": "PLACEHOLDER-002",
+        "recommendation_text": "[PLACEHOLDER, not HRW text] Authorities should ensure that the investigation can be completed without undue interference.",
+        "source_context": "[PLACEHOLDER] Section: Recommendations > To the Lebanese authorities",
+        "source_chunk_id": null,
+        "target_actor_raw": "Authorities",
+        "target_actor": "Government of Lebanon",
+        "action_requested": "Protect investigation from interference",
+        "topic": ["Accountability", "Judicial independence"],
+        "geography": ["Lebanon"],
+        "publication_date": "2021-08-02",
+        "document_title": "[PLACEHOLDER, not a real HRW document]",
+        "document_type": "news_release",
+        "source_url": null
+      },
+      "matched_dimensions": ["actor", "issue"],
+      "relevance": 0.71,
+      "differences": [
+        {
+          "dimension": "requested_action",
+          "observation": "The prior recommendation concerns protecting a specific investigation; the draft concerns the judiciary in general. This may indicate a different requested action.",
+          "draft_quote": "strengthen judicial independence",
+          "prior_quote": "ensure that the investigation can be completed without undue interference",
+          "method": "llm",
+          "provenance": "for_human_review",
+          "quotes_verified": true
+        }
+      ]
+    }
+  ],
+  "notice": "This tool retrieves prior HRW wording and highlights differences. It does not assess consistency with HRW policy. Differences may be intentional; the author and reviewers decide.",
+  "is_mock": true
+}

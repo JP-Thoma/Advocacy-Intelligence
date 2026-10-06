@@ -218,3 +218,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project: raw/derived HRW material stays out of git; manifest is committed
+data/*
+!data/sources.csv
+.env

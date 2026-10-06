@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recommendation Consistency Assistant (POC)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="mock-banner" hidden>MOCK DATA: placeholder responses, not real HRW material or system output</div>
+
+  <header>
+    <h1>Recommendation Consistency Assistant</h1>
+    <p class="sub">Proof of concept. Retrieves prior HRW wording and highlights differences. Humans decide.</p>
+  </header>
+
+  <main>
+    <section id="input">
+      <label for="draft">Draft recommendation</label>
+      <textarea id="draft" rows="3" placeholder="e.g. The Lebanese authorities should strengthen judicial independence."></textarea>
+      <button id="check">Check against previous HRW recommendations</button>
+    </section>
+
+    <section id="parse" hidden>
+      <h2>How the system understood your draft <span class="tag synth">model-generated, please correct</span></h2>
+      <div class="row">
+        <label>Target actor <input id="p-actor" type="text"></label>
+        <label>Topic (comma separated) <input id="p-topic" type="text"></label>
+        <button id="recheck" class="secondary">Re-run with my corrections</button>
+      </div>
+    </section>
+
+    <p id="notice" class="notice" hidden></p>
+    <p id="status" role="status"></p>
+    <section id="results"></section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

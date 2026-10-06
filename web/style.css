@@ -1,0 +1,29 @@
+:root { --ink:#1b1f24; --muted:#5b6570; --line:#d7dce1; --bg:#f6f7f9; --card:#fff; --accent:#1f4e79; }
+* { box-sizing: border-box; }
+body { margin:0; font:16px/1.5 system-ui, sans-serif; color:var(--ink); background:var(--bg); }
+#mock-banner { background:#b42318; color:#fff; text-align:center; padding:.5rem; font-weight:600; position:sticky; top:0; }
+header, main { max-width:880px; margin:0 auto; padding:0 1rem; }
+header { padding-top:1.5rem; }
+h1 { margin:0; font-size:1.5rem; }
+.sub { color:var(--muted); margin-top:.25rem; }
+textarea, input { width:100%; padding:.6rem; border:1px solid var(--line); border-radius:6px; font:inherit; }
+label { display:block; font-weight:600; margin:.75rem 0 .25rem; }
+.row { display:grid; grid-template-columns:1fr 1fr auto; gap:.75rem; align-items:end; }
+button { background:var(--accent); color:#fff; border:0; border-radius:6px; padding:.6rem 1rem; font:inherit; cursor:pointer; margin-top:.5rem; }
+button.secondary { background:#fff; color:var(--accent); border:1px solid var(--accent); }
+.notice { background:#eef3f8; border-left:4px solid var(--accent); padding:.6rem .8rem; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:1rem; margin:1rem 0; }
+.card-top { display:flex; justify-content:space-between; color:var(--muted); font-size:.9rem; }
+blockquote { margin:.5rem 0; padding:.5rem .8rem; border-left:4px solid #2e7d32; background:#f3f8f3; font-style:italic; }
+.meta { display:grid; grid-template-columns:max-content 1fr; gap:.1rem .8rem; font-size:.9rem; margin:.5rem 0; }
+.meta dt { color:var(--muted); } .meta dd { margin:0; }
+.tag { display:inline-block; font-size:.75rem; padding:.05rem .45rem; border-radius:999px; margin-left:.4rem; border:1px solid; }
+.tag.source { color:#1b5e20; border-color:#1b5e20; margin-left:0; }
+.tag.synth { color:#1f4e79; border-color:#1f4e79; }
+.tag.review { color:#8a4b00; border-color:#8a4b00; }
+.tag.method { color:var(--muted); border-color:var(--line); }
+.diffs { list-style:none; padding:0; }
+.diff { border-top:1px solid var(--line); padding:.5rem 0; }
+.quotes { font-size:.85rem; color:var(--muted); background:#fafafa; padding:.4rem .6rem; border-radius:4px; }
+.verified { font-style:italic; }
+.src.disabled { color:var(--muted); }
