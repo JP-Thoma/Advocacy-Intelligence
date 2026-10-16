@@ -1,0 +1,23 @@
+# Copy to eval/gold/<document_id>.yaml. UTF-8. Keep verbatim fields exactly as in the PDF.
+document_id: 202409_lebanon_syrianrefugeepushbacks
+labelled_by: <your name>
+labelled_on: 2026-10-16
+scope: all            # or: "first 15 only" (say why in notes)
+notes: ""
+
+recommendations:
+  - id: r01
+    page: 0
+    target_actor_as_written: "To the Government of Lebanon"
+    text: >-
+      Paste the exact recommendation text here.
+    precedent_of: []
+    # Example of a filled precedent link (delete when unused):
+    # precedent_of:
+    #   - tier: same_actor_same_ask      # see docs/labelling-guide.md
+    #     report: 201804_lebanon_evictionssyrianrefugees
+    #     page: 0
+    #     earlier_text: >-
+    #       Paste the exact earlier text here.
+    #     difference: "One factual sentence on how the wording differs."
+    notes: ""         # extraction artefacts, edge cases (sub-bullets, several actors, ...)

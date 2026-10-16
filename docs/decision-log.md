@@ -30,6 +30,8 @@ Status: D = decided, O = open. Every entry: decision, rationale, what would chan
 - **D22 Key Vault:** not deployed in the POC (Managed Identity + RBAC means no secrets). Documented as a production control and as the key store for customer-managed keys in the Phase 8 confidential redesign.
 - **D23 Raw data:** raw PDFs/HTML and records live in gitignored `data/` locally; a committed `data/sources.csv` manifest holds URL, title, date, type, retrieval date, hash. Blob becomes authoritative once ingestion uploads. Redistribution rights to be checked with Legal.
 
+- **D24 Corpus (M0):** keep the 9 Lebanon PDFs already collected (2017-2024, mixed topics); do not add documents. *Consequence accepted:* only the Syrian refugee trio (2018, 2021, 2024) and possibly the two education reports offer natural precedent pairs, so the M0 criterion of 5 pairs may not be met. Mitigations: synthetic edited drafts carry more of the comparison evaluation; hit-rate@5 is reported with counts and an explicit small-sample caveat; the singleton reports act as distractors that test precision. Hold-out candidate: 202409 pushbacks report. *Revisit if* fewer than 3 genuine pairs are found.
+
 ## Open
 
 - O1 Definition of "relevant precedent" in labelling guidelines (tiers by actor / issue / geography).
