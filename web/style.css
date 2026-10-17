@@ -321,3 +321,8 @@ details.item[open] .item-title { display: block; -webkit-line-clamp: unset; }
 .picker-item { display: flex; gap: .65rem; align-items: flex-start; cursor: pointer; }
 .picker-item input { width: auto; margin-top: .3rem; accent-color: var(--accent); flex: none; }
 .picker-item:has(input:checked) { background: var(--accent-soft); color: var(--ink); }
+
+/* Review area: tinted with the accent so it reads as "where to act" */
+.review-label { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .75rem; color: var(--accent); }
+.label-note { font-size: .78rem; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); }
+.diff { background: var(--accent-soft); border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }

@@ -189,7 +189,8 @@ function renderPrecedent(p, index) {
 
   if (p.differences.length) {
     const sec = el("div", "diff-section");
-    const l = el("div", "section-label", `Model interpretation: possible differences from your draft (${p.differences.length})`);
+    const l = el("div", "section-label review-label", `Review recommendation (${p.differences.length})`);
+    l.append(el("span", "label-note", "Model-generated observations, please check against the source"));
     const ul = el("ul", "diffs");
     p.differences.forEach((d) => ul.append(renderDifference(d)));
     sec.append(l, ul);
