@@ -29,20 +29,24 @@
 
     <section class="panel composer" aria-labelledby="draft-label">
       <div class="panel-head">
-        <label id="draft-label" for="draft" class="panel-title">Draft recommendation</label>
+        <label id="draft-label" for="draft" class="panel-title">Draft recommendations</label>
         <input id="file" type="file" hidden accept=".docx,.pptx,.pdf,.txt">
         <button id="upload" type="button" class="upload" title="Word, PowerPoint, PDF or text file, up to 5 MB">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.5l-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l9-9a3.7 3.7 0 0 1 5.2 5.2l-9 9a1.8 1.8 0 0 1-2.6-2.6l8.4-8.4"/></svg>
           <span>Attach file</span>
         </button>
       </div>
-      <textarea id="draft" rows="4" maxlength="4000" spellcheck="true"
-        placeholder="e.g. The Lebanese authorities should strengthen judicial independence."></textarea>
+      <textarea id="draft" rows="5" maxlength="20000" spellcheck="true"
+        placeholder="Paste one recommendation or a numbered list, e.g.&#10;1. The Lebanese authorities should strengthen judicial independence.&#10;2. Parliament should adopt legislation protecting judges from political interference."></textarea>
 
       <div id="picker" class="picker" hidden>
         <div class="picker-head">
           <span id="picker-title" class="picker-title"></span>
-          <button id="picker-close" type="button" class="btn ghost small">Dismiss</button>
+          <div class="picker-actions">
+            <button id="picker-all" type="button" class="btn ghost small">Select all</button>
+            <button id="picker-add" type="button" class="btn primary small" disabled>Add selected</button>
+            <button id="picker-close" type="button" class="btn ghost small">Dismiss</button>
+          </div>
         </div>
         <ul id="picker-list" class="picker-list" aria-labelledby="picker-title"></ul>
       </div>
@@ -52,7 +56,7 @@
           <span class="examples-label">Examples</span>
         </div>
         <div class="composer-actions">
-          <span id="count" class="count" aria-hidden="true">0 / 4000</span>
+          <span id="count" class="count" aria-hidden="true">0</span>
           <button id="clear" type="button" class="btn ghost" hidden>Clear</button>
           <button id="check" type="button" class="btn primary">
             <span class="btn-label">Check against previous HRW recommendations</span>
@@ -61,28 +65,6 @@
         </div>
       </div>
       <p id="upload-status" class="upload-status" role="status" aria-live="polite" hidden></p>
-    </section>
-
-    <section id="parse" class="panel parse" aria-labelledby="parse-title" hidden>
-      <div class="panel-head">
-        <h2 id="parse-title" class="panel-title">How the system understood your draft</h2>
-        <span class="hint">Model-generated. Correct anything that is wrong.</span>
-      </div>
-      <div class="parse-grid">
-        <label class="field">
-          <span>Target actor</span>
-          <input id="p-actor" type="text" autocomplete="off">
-        </label>
-        <label class="field">
-          <span>Topic <em>(comma separated)</em></span>
-          <input id="p-topic" type="text" autocomplete="off">
-        </label>
-        <label class="field">
-          <span>Geography</span>
-          <input id="p-geo" type="text" readonly tabindex="-1" aria-readonly="true">
-        </label>
-        <button id="recheck" type="button" class="btn outline">Re-run with my corrections</button>
-      </div>
     </section>
 
     <aside id="notice" class="notice" role="note" hidden>
@@ -94,11 +76,11 @@
 
     <section id="results-wrap" aria-labelledby="results-title" hidden>
       <div class="results-head">
-        <h2 id="results-title" class="results-title">Relevant prior recommendations <span id="results-count" class="count-badge"></span></h2>
+        <h2 id="results-title" class="results-title">Results <span id="results-count" class="count-badge"></span></h2>
         <div class="controls">
           <div id="filters" class="chips" role="group" aria-label="Filter by type of difference"></div>
           <label class="sort">
-            <span>Sort by</span>
+            <span>Sort precedents by</span>
             <select id="sort">
               <option value="relevance">Relevance</option>
               <option value="newest">Newest first</option>
@@ -106,9 +88,13 @@
               <option value="differences">Most differences</option>
             </select>
           </label>
+          <div class="fold-all">
+            <button id="expand-all" type="button" class="btn ghost small">Expand all</button>
+            <button id="collapse-all" type="button" class="btn ghost small">Collapse all</button>
+          </div>
         </div>
       </div>
-      <div id="results" class="results"></div>
+      <div id="items" class="items"></div>
     </section>
 
     <section id="empty" class="empty">

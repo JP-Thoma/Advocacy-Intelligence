@@ -3,8 +3,10 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 from advocacy_intel.api.document_text import MAX_UPLOAD_BYTES, DocumentError, extract_paragraphs
+from advocacy_intel.api.splitting import split_recommendations
 from advocacy_intel.models import CheckRequest, CheckResponse
 
 WEB_DIR = Path(__file__).resolve().parents[3] / "web"
@@ -32,6 +34,19 @@ def check(req: CheckRequest) -> CheckResponse:
     if req.topic is not None:
         resp.draft.topic = req.topic
     return resp
+
+
+class SplitRequest(BaseModel):
+    text: str = Field(max_length=20000)
+
+
+@app.post("/api/split")
+def split(req: SplitRequest) -> dict[str, object]:
+    """Split pasted text into separate recommendations (deterministic heuristics)."""
+    recommendations, truncated = split_recommendations(req.text)
+    if not recommendations:
+        raise HTTPException(422, "Enter at least one recommendation.")
+    return {"recommendations": recommendations, "truncated": truncated}
 
 
 @app.post("/api/extract")
