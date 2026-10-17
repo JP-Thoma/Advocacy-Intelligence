@@ -95,7 +95,6 @@ function renderDifference(d) {
     el("span", "diff-dim", dimLabel(d.dimension)),
     el("span", "diff-method", d.method === "deterministic" ? "Computed by code" : "Judged by model"),
   );
-  if (d.provenance === "for_human_review") head.append(el("span", "tag review", "For human review"));
   li.append(head, el("p", null, d.observation));
   if (d.draft_quote || d.prior_quote) {
     const cmp = el("div", "compare");
@@ -275,6 +274,8 @@ function renderHead(item) {
   head.append(chevron, num, main);
 }
 
+const splitList = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
+
 function field(label, input, hint) {
   const wrap = el("label", "field");
   const span = el("span", null, label);
@@ -283,12 +284,11 @@ function field(label, input, hint) {
   return wrap;
 }
 
-function textInput(value, readonly) {
+function textInput(value) {
   const i = el("input");
   i.type = "text";
   i.value = value;
   i.autocomplete = "off";
-  if (readonly) { i.readOnly = true; i.tabIndex = -1; }
   return i;
 }
 
@@ -296,6 +296,7 @@ function renderRefine(item) {
   const d = item.data.draft;
   const actorOrig = d.target_actor || "";
   const topicOrig = (d.topic || []).join(", ");
+  const geoOrig = (d.geography || []).join(", ");
 
   const box = el("div", "refine");
   const head = el("div", "refine-head");
@@ -310,7 +311,7 @@ function renderRefine(item) {
   wording.maxLength = 4000;
   const actor = textInput(actorOrig);
   const topic = textInput(topicOrig);
-  const geo = textInput((d.geography || []).join(", "), true);
+  const geo = textInput(geoOrig);
 
   const rerun = el("button", "btn outline small", "Re-run with my edits");
   rerun.type = "button";
@@ -320,7 +321,8 @@ function renderRefine(item) {
     // Only send fields the user actually changed, so an edited wording is re-parsed fresh.
     const overrides = {};
     if (actor.value.trim() !== actorOrig) overrides.target_actor = actor.value.trim() || null;
-    if (topic.value.trim() !== topicOrig) overrides.topic = topic.value.split(",").map((s) => s.trim()).filter(Boolean);
+    if (topic.value.trim() !== topicOrig) overrides.topic = splitList(topic.value);
+    if (geo.value.trim() !== geoOrig) overrides.geography = splitList(geo.value);
     item.text = text;
     item.overrides = overrides;
     checkItem(item);
@@ -330,7 +332,7 @@ function renderRefine(item) {
   actions.append(remove, rerun);
 
   const grid = el("div", "parse-grid");
-  grid.append(field("Target actor", actor), field("Topic", topic, "(comma separated)"), field("Geography", geo));
+  grid.append(field("Target actor", actor), field("Topic", topic, "(comma separated)"), field("Geography", geo, "(comma separated)"));
   box.append(head, field("Wording", wording), grid, actions);
   return box;
 }

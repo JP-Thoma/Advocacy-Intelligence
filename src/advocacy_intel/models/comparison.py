@@ -60,6 +60,7 @@ class CheckRequest(BaseModel):
     draft_text: str = Field(min_length=1)
     target_actor: str | None = None  # user-confirmed overrides
     topic: list[str] | None = None
+    geography: list[str] | None = None
 
 
 class CheckResponse(BaseModel):

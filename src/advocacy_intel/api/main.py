@@ -33,6 +33,8 @@ def check(req: CheckRequest) -> CheckResponse:
         resp.draft.target_actor = req.target_actor
     if req.topic is not None:
         resp.draft.topic = req.topic
+    if req.geography is not None:
+        resp.draft.geography = req.geography
     return resp
 
 
