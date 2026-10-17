@@ -143,19 +143,20 @@ function metaItem(dl, k, v, sub) {
   dl.append(wrap);
 }
 
+// A retrieval score is not a measure of correctness, so only a coarse tier is shown. The
+// thresholds are placeholders: calibrate them against the labelled gold set once retrieval exists.
+function relevanceTier(r) {
+  if (r >= 0.8) return "Strong match";
+  if (r >= 0.6) return "Good match";
+  return "Possible match";
+}
+
 function renderPrecedent(p, index) {
   const r = p.recommendation;
   const card = el("article", "card");
 
-  const pct = Math.round(p.relevance * 100);
   const rank = el("div", "rank");
-  const meter = el("div", "meter");
-  meter.setAttribute("role", "img");
-  meter.setAttribute("aria-label", `Retrieval relevance ${pct} percent`);
-  const bar = el("i");
-  bar.style.width = `${pct}%`;
-  meter.append(bar);
-  rank.append(el("span", "rank-num", `#${index + 1}`), meter, el("span", "rel-text", `${pct}% relevance`));
+  rank.append(el("span", "rank-num", `#${index + 1}`), el("span", "match-tier", relevanceTier(p.relevance)));
 
   // Source text: verbatim, visually separate from model interpretation below.
   const source = el("div");
@@ -299,15 +300,17 @@ function renderRefine(item) {
   const topicOrig = (d.topic || []).join(", ");
   const geoOrig = (d.geography || []).join(", ");
 
-  const box = el("div", "refine");
-  const head = el("div", "refine-head");
-  head.append(
-    el("span", "section-label", "How the system understood this recommendation"),
-    el("span", "hint", "Model-generated. Correct anything that is wrong."),
+  const box = el("details", "refine");
+  const readAs = [actorOrig, topicOrig, geoOrig].filter(Boolean).join(" · ");
+  const sum = el("summary", "refine-summary");
+  sum.append(
+    el("span", "refine-label", "Read as"),
+    el("span", "refine-read", readAs || "No target actor, topic or geography detected"),
+    el("span", "refine-link", "Adjust"),
   );
 
   const wording = el("textarea");
-  wording.rows = 2;
+  wording.rows = Math.min(6, Math.max(2, Math.ceil(item.text.length / 90)));
   wording.value = item.text;
   wording.maxLength = 4000;
   const actor = textInput(actorOrig);
@@ -333,7 +336,12 @@ function renderRefine(item) {
 
   const grid = el("div", "parse-grid");
   grid.append(field("Target actor", actor), field("Topic", topic, "(comma separated)"), field("Geography", geo, "(comma separated)"));
-  box.append(head, field("Wording", wording), grid, actions);
+  const form = el("div", "refine-form");
+  form.append(
+    el("p", "hint", "Model-generated reading of this recommendation. Correct anything that is wrong."),
+    field("Wording", wording), grid, actions,
+  );
+  box.append(sum, form);
   return box;
 }
 
