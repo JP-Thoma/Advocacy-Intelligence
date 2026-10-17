@@ -1,13 +1,15 @@
 // Thin client: all content is inserted with textContent / text nodes (never innerHTML),
-// because prior-recommendation text is external data.
+// because prior-recommendation text and uploaded documents are external data.
 
 const $ = (id) => document.getElementById(id);
 
-const LABELS = {
-  source_text: ["Source text", "source"],
-  model_synthesis: ["Model interpretation", "synth"],
-  for_human_review: ["Inference: for human review", "review"],
-};
+// "scope" is shown as "topic" so the UI uses one term; the API dimension name is unchanged.
+const DIMENSION_LABELS = { scope: "topic" };
+const pretty = (s) => String(s).replaceAll("_", " ");
+const dimLabel = (d) => DIMENSION_LABELS[d] || pretty(d);
+
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const MAX_DRAFT_CHARS = 4000;
 
 const EXAMPLES = [
   "The Lebanese authorities should strengthen judicial independence.",
@@ -22,13 +24,6 @@ function el(tag, cls, text) {
   if (cls) e.className = cls;
   if (text !== undefined && text !== null) e.textContent = text;
   return e;
-}
-
-const pretty = (s) => String(s).replaceAll("_", " ");
-
-function tag(provenance) {
-  const [label, cls] = LABELS[provenance] || [pretty(provenance), "synth"];
-  return el("span", `tag ${cls}`, label);
 }
 
 function formatDate(iso) {
@@ -65,13 +60,13 @@ function quoteBox(kind, label, text) {
 }
 
 function renderDifference(d) {
-  const li = el("li", d.method === "llm" ? "diff" : "diff model");
+  const li = el("li", "diff");
   const head = el("div", "diff-head");
   head.append(
-    el("span", "diff-dim", pretty(d.dimension)),
-    tag(d.provenance),
-    el("span", "tag method", d.method === "deterministic" ? "Computed by code" : "Judged by model"),
+    el("span", "diff-dim", dimLabel(d.dimension)),
+    el("span", "diff-method", d.method === "deterministic" ? "Computed by code" : "Judged by model"),
   );
+  if (d.provenance === "for_human_review") head.append(el("span", "tag review", "For human review"));
   li.append(head, el("p", null, d.observation));
   if (d.draft_quote || d.prior_quote) {
     const cmp = el("div", "compare");
@@ -80,8 +75,8 @@ function renderDifference(d) {
     li.append(cmp);
     li.append(el(
       "div",
-      `verify ${d.quotes_verified ? "ok" : "bad"}`,
-      d.quotes_verified ? "✓ Quotes verified against the text" : "⚠ Quotes NOT verified against the text",
+      `verify ${d.quotes_verified ? "" : "bad"}`,
+      d.quotes_verified ? "Quotes verified against the text" : "⚠ Quotes NOT verified against the text",
     ));
   }
   return li;
@@ -135,18 +130,8 @@ function renderPrecedent(p, index) {
   meter.append(bar);
   rank.append(el("span", "rank-num", `#${index + 1}`), meter, el("span", "rel-text", `${pct}% relevance`));
 
-  const matched = el("div", "matched", p.matched_dimensions.length ? "Matched on" : "");
-  p.matched_dimensions.forEach((m) => matched.append(el("span", "tag plain", pretty(m))));
-
-  const top = el("div", "card-top");
-  top.append(rank, matched);
-
-  const body = el("div", "card-body");
-
   // Source text: verbatim, visually separate from model interpretation below.
   const source = el("div");
-  const label = el("div", "section-label");
-  label.append(tag("source_text"), document.createTextNode("Verbatim HRW wording"));
   const block = el("div", "source-block");
   const quote = el("blockquote");
   quote.append(highlighted(r.recommendation_text, p.differences.map((d) => d.prior_quote)));
@@ -164,7 +149,7 @@ function renderPrecedent(p, index) {
     cite.append(el("span", "src disabled", "No source link (placeholder record)"));
   }
   block.append(quote, cite);
-  source.append(label, block);
+  source.append(el("div", "section-label", "Verbatim HRW wording"), block);
 
   const meta = el("dl", "meta");
   metaItem(meta, "Target actor", r.target_actor || r.target_actor_raw,
@@ -173,25 +158,18 @@ function renderPrecedent(p, index) {
   metaItem(meta, "Topic", (r.topic || []).join(", "));
   metaItem(meta, "Geography", (r.geography || []).join(", "));
 
-  body.append(source, meta);
-
-  if (r.source_context) {
-    const ctx = el("details", "context");
-    ctx.append(el("summary", null, "Source context"), el("p", null, r.source_context));
-    body.append(ctx);
-  }
+  const parts = [rank, source, meta];
 
   if (p.differences.length) {
     const sec = el("div", "diff-section");
-    const l = el("div", "section-label");
-    l.append(tag("model_synthesis"), document.createTextNode(`Possible differences from your draft (${p.differences.length})`));
+    const l = el("div", "section-label", `Model interpretation: possible differences from your draft (${p.differences.length})`);
     const ul = el("ul", "diffs");
     p.differences.forEach((d) => ul.append(renderDifference(d)));
     sec.append(l, ul);
-    body.append(sec);
+    parts.push(sec);
   }
 
-  card.append(top, body);
+  card.append(...parts);
   return card;
 }
 
@@ -215,7 +193,7 @@ function renderFilters() {
   box.replaceChildren();
   if (dims.length < 2) return;
   [null, ...dims].forEach((dim) => {
-    const b = el("button", "chip", dim ? pretty(dim) : "All");
+    const b = el("button", "chip", dim ? dimLabel(dim) : "All");
     b.type = "button";
     b.setAttribute("aria-pressed", String(state.filter === dim));
     b.addEventListener("click", () => { state.filter = dim; renderFilters(); renderResults(); });
@@ -275,7 +253,7 @@ function setStatus(kind, text, retry) {
   if (!text) return;
   s.append(el("span", null, text));
   if (retry) {
-    const b = el("button", "btn secondary small", "Try again");
+    const b = el("button", "btn outline small", "Try again");
     b.type = "button";
     b.addEventListener("click", retry);
     s.append(b);
@@ -325,8 +303,90 @@ async function run(overrides = {}) {
 
 function syncComposer() {
   const n = $("draft").value.length;
-  $("count").textContent = `${n} / 4000`;
+  $("count").textContent = `${n} / ${MAX_DRAFT_CHARS}`;
   $("clear").hidden = n === 0;
+}
+
+// --- Word upload -----------------------------------------------------------
+// The file is posted as a raw body; the server returns its paragraphs and stores nothing.
+function setUploadStatus(kind, text) {
+  const s = $("upload-status");
+  s.hidden = !text;
+  s.className = `upload-status ${kind || ""}`;
+  s.textContent = text || "";
+}
+
+function useParagraph(text) {
+  const clipped = text.length > MAX_DRAFT_CHARS;
+  $("draft").value = clipped ? text.slice(0, MAX_DRAFT_CHARS) : text;
+  syncComposer();
+  $("draft").focus();
+  return clipped;
+}
+
+function closePicker() {
+  $("picker").hidden = true;
+  $("picker-list").replaceChildren();
+}
+
+function loaded(name, clipped) {
+  if (clipped) setUploadStatus("error", `Loaded from ${name}, but the text was longer than ${MAX_DRAFT_CHARS} characters and was shortened. Please check it.`);
+  else setUploadStatus("", `Loaded from ${name}.`);
+}
+
+function showPicker(name, paragraphs) {
+  $("picker-title").textContent = `${paragraphs.length} paragraphs found in ${name}. Select the recommendation to check.`;
+  const list = $("picker-list");
+  list.replaceChildren();
+  paragraphs.forEach((text) => {
+    const b = el("button", "picker-item", text.length > 220 ? `${text.slice(0, 217)}…` : text);
+    b.type = "button";
+    b.title = text;
+    b.addEventListener("click", () => { const clipped = useParagraph(text); closePicker(); loaded(name, clipped); });
+    const li = el("li");
+    li.append(b);
+    list.append(li);
+  });
+  $("picker").hidden = false;
+}
+
+async function handleFile(file) {
+  closePicker();
+  if (!file) return;
+  if (!/\.(docx|pptx|pdf|txt)$/i.test(file.name)) {
+    setUploadStatus("error", "Supported file types are .docx, .pptx, .pdf and .txt. Older .doc and .ppt files can be re-saved in the newer format.");
+    return;
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    setUploadStatus("error", "The file is larger than 5 MB.");
+    return;
+  }
+  setUploadStatus("", "Reading document…");
+  $("upload").disabled = true;
+  try {
+    const res = await fetch(`/api/extract?filename=${encodeURIComponent(file.name)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/octet-stream" },
+      body: file,
+    });
+    if (!res.ok) {
+      let detail = `The server responded with HTTP ${res.status}`;
+      try { detail = (await res.json()).detail || detail; } catch { /* keep default */ }
+      throw new Error(detail);
+    }
+    const { paragraphs, truncated } = await res.json();
+    if (paragraphs.length === 1) {
+      loaded(file.name, useParagraph(paragraphs[0]));
+    } else {
+      setUploadStatus("", truncated ? `Only the first ${paragraphs.length} paragraphs are listed.` : "");
+      showPicker(file.name, paragraphs);
+    }
+  } catch (err) {
+    setUploadStatus("error", `Could not read the document: ${err.message}`);
+  } finally {
+    $("upload").disabled = false;
+    $("file").value = "";
+  }
 }
 
 EXAMPLES.forEach((text) => {
@@ -348,4 +408,7 @@ $("draft").addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); run({}); }
 });
 $("sort").addEventListener("change", () => state.data && renderResults());
+$("upload").addEventListener("click", () => $("file").click());
+$("file").addEventListener("change", (e) => handleFile(e.target.files[0]));
+$("picker-close").addEventListener("click", closePicker);
 syncComposer();

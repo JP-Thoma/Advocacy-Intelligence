@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Recommendation Consistency Assistant">
+  <rect width="32" height="32" rx="8" fill="#1e2a5a"/>
+  <rect x="6" y="7" width="13" height="16" rx="2.5" fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width="1.8"/>
+  <rect x="13" y="10" width="13" height="16" rx="2.5" fill="#ffffff"/>
+  <path d="M16.5 15h6.5M16.5 18.5h6.5M16.5 22h3.5" stroke="#1e2a5a" stroke-width="1.8" stroke-linecap="round"/>
+</svg>
