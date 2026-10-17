@@ -255,7 +255,7 @@ mark { background: var(--mark); color: inherit; border-radius: 3px; padding: .02
 .steps { list-style: none; counter-reset: s; padding: 0; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; }
 .steps li { counter-increment: s; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: .35rem .95rem .35rem .4rem; font-size: .85rem; color: var(--ink-2); display: flex; align-items: center; gap: .5rem; }
 .steps li::before { content: counter(s); display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: .72rem; font-weight: 700; }
-.foot { max-width: 960px; margin: 0 auto; padding: 0 1.25rem 2rem; font-size: .8rem; color: var(--muted); }
+.foot { max-width: 960px; margin: 0 auto; padding: 1rem 1.25rem 2rem; font-size: .8rem; color: var(--muted); text-align: center; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -310,7 +310,6 @@ details.item[open] .item-title { display: block; -webkit-line-clamp: unset; }
 .refine textarea { min-height: 0; background: var(--surface); }
 .refine input[type="text"] { background: var(--surface); }
 .refine-actions { display: flex; justify-content: flex-end; gap: .5rem; align-items: center; }
-.refine-actions.solo { margin-top: -.25rem; }
 @media (max-width: 720px) { .refine .parse-grid { grid-template-columns: 1fr; } }
 
 /* Toolbar */

@@ -328,24 +328,13 @@ function renderRefine(item) {
     item.overrides = overrides;
     checkItem(item);
   });
-  const remove = removeButton(item);
   const actions = el("div", "refine-actions");
-  actions.append(remove, rerun);
+  actions.append(rerun);
 
   const grid = el("div", "parse-grid");
   grid.append(field("Target actor", actor), field("Topic", topic, "(comma separated)"), field("Geography", geo, "(comma separated)"));
   box.append(head, field("Wording", wording), grid, actions);
   return box;
-}
-
-function removeButton(item) {
-  const b = el("button", "btn ghost small", "Remove from review");
-  b.type = "button";
-  b.addEventListener("click", () => {
-    state.items = state.items.filter((i) => i !== item);
-    renderItems();
-  });
-  return b;
 }
 
 function renderBody(item) {
@@ -367,8 +356,7 @@ function renderBody(item) {
     retry.type = "button";
     retry.addEventListener("click", () => checkItem(item));
     err.append(retry);
-    body.append(err, el("div", "refine-actions solo"));
-    body.lastChild.append(removeButton(item));
+    body.append(err);
     return;
   }
 
