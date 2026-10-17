@@ -143,20 +143,14 @@ function metaItem(dl, k, v, sub) {
   dl.append(wrap);
 }
 
-// A retrieval score is not a measure of correctness, so only a coarse tier is shown. The
-// thresholds are placeholders: calibrate them against the labelled gold set once retrieval exists.
-function relevanceTier(r) {
-  if (r >= 0.8) return "Strong match";
-  if (r >= 0.6) return "Good match";
-  return "Possible match";
-}
-
-function renderPrecedent(p, index) {
+// `rank` is the retrieval rank (1 = highest score), not the position on screen, so "Match 1"
+// keeps its meaning when the list is re-sorted. The score itself is never shown: it is not a
+// measure of correctness, only an ordering.
+function renderPrecedent(p, rank) {
   const r = p.recommendation;
   const card = el("article", "card");
 
-  const rank = el("div", "rank");
-  rank.append(el("span", "rank-num", `#${index + 1}`), el("span", "match-tier", relevanceTier(p.relevance)));
+  const rankLabel = el("div", "rank", `Match ${rank}`);
 
   // Source text: verbatim, visually separate from model interpretation below.
   const source = el("div");
@@ -186,7 +180,7 @@ function renderPrecedent(p, index) {
   metaItem(meta, "Topic", (r.topic || []).join(", "));
   metaItem(meta, "Geography", (r.geography || []).join(", "));
 
-  const parts = [rank, source, meta];
+  const parts = [rankLabel, source, meta];
 
   if (p.differences.length) {
     const sec = el("div", "diff-section");
@@ -384,7 +378,8 @@ function fillResults(item) {
       : "No relevant prior recommendations were found."));
     return;
   }
-  list.forEach((p, i) => results.append(renderPrecedent(p, i)));
+  const byScore = [...item.data.precedents].sort((a, b) => b.relevance - a.relevance);
+  list.forEach((p) => results.append(renderPrecedent(p, byScore.indexOf(p) + 1)));
 }
 
 function updateItem(item) {

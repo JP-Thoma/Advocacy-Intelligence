@@ -173,9 +173,7 @@ input[readonly] { background: var(--surface-2); color: var(--muted); }
 .card:hover { box-shadow: var(--shadow-lg); }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-.rank { display: flex; align-items: center; gap: .65rem; font-size: .8rem; color: var(--muted); }
-.rank-num { font-weight: 700; color: var(--ink-2); }
-.match-tier { font-weight: 600; color: var(--ink-2); }
+.rank { font-size: .8rem; font-weight: 650; color: var(--ink-2); }
 
 .section-label { margin-bottom: .55rem; font-size: .72rem; font-weight: 650; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
 
