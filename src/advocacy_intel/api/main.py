@@ -1,9 +1,12 @@
 from importlib import resources
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
+from advocacy_intel.api.document_text import MAX_UPLOAD_BYTES, DocumentError, extract_paragraphs
+from advocacy_intel.api.splitting import split_recommendations
 from advocacy_intel.models import CheckRequest, CheckResponse
 
 WEB_DIR = Path(__file__).resolve().parents[3] / "web"
@@ -30,8 +33,53 @@ def check(req: CheckRequest) -> CheckResponse:
         resp.draft.target_actor = req.target_actor
     if req.topic is not None:
         resp.draft.topic = req.topic
+    if req.geography is not None:
+        resp.draft.geography = req.geography
     return resp
 
 
+class SplitRequest(BaseModel):
+    text: str = Field(max_length=20000)
+
+
+@app.post("/api/split")
+def split(req: SplitRequest) -> dict[str, object]:
+    """Split pasted text into separate recommendations (deterministic heuristics)."""
+    recommendations, truncated = split_recommendations(req.text)
+    if not recommendations:
+        raise HTTPException(422, "Enter at least one recommendation.")
+    return {"recommendations": recommendations, "truncated": truncated}
+
+
+@app.post("/api/extract")
+async def extract(request: Request, filename: str = "") -> dict[str, object]:
+    """Return candidate paragraphs of an uploaded .docx/.pptx/.pdf/.txt (raw request body,
+    type taken from `filename`). Nothing is stored."""
+    declared = request.headers.get("content-length")
+    if declared and declared.isdigit() and int(declared) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "The file is larger than 5 MB.")
+    data = await request.body()
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "The file is larger than 5 MB.")
+    try:
+        paragraphs, truncated = extract_paragraphs(data, filename)
+    except DocumentError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    if not paragraphs:
+        raise HTTPException(
+            422, "No readable text was found. Scanned PDFs (images of text) are not supported."
+        )
+    return {"paragraphs": paragraphs, "truncated": truncated}
+
+
+class RevalidatingStaticFiles(StaticFiles):
+    """Static files that browsers must revalidate (ETag) so edits show up on reload."""
+
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 if WEB_DIR.is_dir():
-    app.mount("/", StaticFiles(directory=WEB_DIR, html=True), name="web")
+    app.mount("/", RevalidatingStaticFiles(directory=WEB_DIR, html=True), name="web")

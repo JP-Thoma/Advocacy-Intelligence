@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <title>Recommendation Consistency Assistant (POC)</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111827'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <meta name="color-scheme" content="light">
+  <title>Recommendation Consistency Assistant</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,31 +15,48 @@
 
   <header class="topbar">
     <div class="topbar-inner">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
-        </span>
+      <a class="brand" href="/" aria-label="Recommendation Consistency Assistant, home">
+        <img class="brand-logo" src="logo.svg" width="32" height="32" alt="">
         <span class="brand-name">Recommendation Consistency Assistant</span>
-        <span class="pill">Proof of concept</span>
-      </div>
-      <p class="principle">AI retrieves precedent and highlights differences. <strong>Humans decide.</strong></p>
+      </a>
     </div>
   </header>
 
   <main class="page">
+    <section class="intro">
+      <p>Compare a draft recommendation with earlier HRW wording and see where it differs.</p>
+    </section>
+
     <section class="panel composer" aria-labelledby="draft-label">
       <div class="panel-head">
-        <label id="draft-label" for="draft" class="panel-title">Draft recommendation</label>
-        <span class="hint">Paste or write the recommendation you want to review</span>
+        <label id="draft-label" for="draft" class="panel-title">Draft recommendations</label>
+        <input id="file" type="file" hidden accept=".docx,.pptx,.pdf,.txt">
+        <button id="upload" type="button" class="upload" title="Word, PowerPoint, PDF or text file, up to 5 MB">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.5l-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l9-9a3.7 3.7 0 0 1 5.2 5.2l-9 9a1.8 1.8 0 0 1-2.6-2.6l8.4-8.4"/></svg>
+          <span>Attach file</span>
+        </button>
       </div>
-      <textarea id="draft" rows="4" maxlength="4000" spellcheck="true"
-        placeholder="e.g. The Lebanese authorities should strengthen judicial independence."></textarea>
+      <textarea id="draft" rows="5" maxlength="20000" spellcheck="true"
+        placeholder="Paste one recommendation or a numbered list, e.g.&#10;1. The Lebanese authorities should strengthen judicial independence.&#10;2. Parliament should adopt legislation protecting judges from political interference."></textarea>
+
+      <div id="picker" class="picker" hidden>
+        <div class="picker-head">
+          <span id="picker-title" class="picker-title"></span>
+          <div class="picker-actions">
+            <button id="picker-all" type="button" class="btn ghost small">Select all</button>
+            <button id="picker-add" type="button" class="btn primary small" disabled>Add selected</button>
+            <button id="picker-close" type="button" class="btn ghost small">Dismiss</button>
+          </div>
+        </div>
+        <ul id="picker-list" class="picker-list" aria-labelledby="picker-title"></ul>
+      </div>
+
       <div class="composer-foot">
         <div class="examples" id="examples" aria-label="Example drafts">
-          <span class="examples-label">Try an example</span>
+          <span class="examples-label">Examples</span>
         </div>
         <div class="composer-actions">
-          <span id="count" class="count" aria-hidden="true">0 / 4000</span>
+          <span id="count" class="count" aria-hidden="true">0</span>
           <button id="clear" type="button" class="btn ghost" hidden>Clear</button>
           <button id="check" type="button" class="btn primary">
             <span class="btn-label">Check against previous HRW recommendations</span>
@@ -47,32 +64,10 @@
           </button>
         </div>
       </div>
-    </section>
-
-    <section id="parse" class="panel parse" aria-labelledby="parse-title" hidden>
-      <div class="panel-head">
-        <h2 id="parse-title" class="panel-title">How the system understood your draft</h2>
-        <span class="tag synth">Model-generated, please correct</span>
-      </div>
-      <div class="parse-grid">
-        <label class="field">
-          <span>Target actor</span>
-          <input id="p-actor" type="text" autocomplete="off">
-        </label>
-        <label class="field">
-          <span>Topic <em>(comma separated)</em></span>
-          <input id="p-topic" type="text" autocomplete="off">
-        </label>
-        <label class="field">
-          <span>Geography</span>
-          <input id="p-geo" type="text" readonly tabindex="-1" aria-readonly="true">
-        </label>
-        <button id="recheck" type="button" class="btn secondary">Re-run with my corrections</button>
-      </div>
+      <p id="upload-status" class="upload-status" role="status" aria-live="polite" hidden></p>
     </section>
 
     <aside id="notice" class="notice" role="note" hidden>
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
       <p id="notice-text"></p>
     </aside>
 
@@ -80,11 +75,11 @@
 
     <section id="results-wrap" aria-labelledby="results-title" hidden>
       <div class="results-head">
-        <h2 id="results-title" class="results-title">Relevant prior recommendations <span id="results-count" class="count-badge"></span></h2>
+        <h2 id="results-title" class="results-title">Results <span id="results-count" class="count-badge"></span></h2>
         <div class="controls">
           <div id="filters" class="chips" role="group" aria-label="Filter by type of difference"></div>
           <label class="sort">
-            <span>Sort by</span>
+            <span>Sort precedents by</span>
             <select id="sort">
               <option value="relevance">Relevance</option>
               <option value="newest">Newest first</option>
@@ -92,27 +87,26 @@
               <option value="differences">Most differences</option>
             </select>
           </label>
+          <div class="fold-all">
+            <button id="expand-all" type="button" class="btn ghost small">Expand all</button>
+            <button id="collapse-all" type="button" class="btn ghost small">Collapse all</button>
+          </div>
         </div>
       </div>
-      <div id="results" class="results"></div>
+      <div id="items" class="items"></div>
     </section>
 
     <section id="empty" class="empty">
-      <div class="empty-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h10M4 19h7"/><circle cx="18" cy="17" r="3"/><path d="M20.2 19.2L22 21"/></svg>
-      </div>
-      <h2>Check a draft against prior wording</h2>
-      <p>Enter a draft recommendation to see the most relevant earlier HRW recommendations, quoted verbatim with their sources, and where the wording, scope or target actor appears to differ.</p>
       <ol class="steps">
         <li><strong>Retrieve</strong> prior recommendations</li>
-        <li><strong>Compare</strong> wording, scope and actor</li>
+        <li><strong>Compare</strong> wording, topic and actor</li>
         <li><strong>Review</strong> and decide as the author</li>
       </ol>
     </section>
   </main>
 
   <footer class="foot">
-    <p>Differences are observations for human review, not judgements of consistency with HRW policy.</p>
+    <p>&copy; 2026 Recommendation Consistency Assistant &middot; Jan P. Thoma</p>
   </footer>
 
   <script src="app.js"></script>

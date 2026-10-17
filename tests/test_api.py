@@ -37,3 +37,9 @@ def test_every_llm_difference_has_verified_quotes_in_fixture():
     for p in body["precedents"]:
         for d in p["differences"]:
             assert d["quotes_verified"] is True
+
+
+def test_check_applies_user_overrides_including_geography():
+    r = client.post("/api/check", json={"draft_text": "x", "target_actor": "A", "topic": ["t"], "geography": ["Syria"]})
+    draft = r.json()["draft"]
+    assert (draft["target_actor"], draft["topic"], draft["geography"]) == ("A", ["t"], ["Syria"])
