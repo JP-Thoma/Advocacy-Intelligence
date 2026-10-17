@@ -390,7 +390,7 @@ async function handleFile(file) {
 }
 
 EXAMPLES.forEach((text) => {
-  const b = el("button", "example", text.length > 58 ? `${text.slice(0, 55)}…` : text);
+  const b = el("button", "example", text.length > 36 ? `${text.slice(0, 33)}…` : text);
   b.type = "button";
   b.title = text;
   b.addEventListener("click", () => { $("draft").value = text; syncComposer(); $("draft").focus(); });

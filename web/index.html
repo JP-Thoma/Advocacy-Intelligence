@@ -24,13 +24,17 @@
 
   <main class="page">
     <section class="intro">
-      <p>Check a draft recommendation against previous HRW recommendations. The assistant finds the closest prior wording, quotes it verbatim with its source, and points out where topic, target actor or strength of language appear to differ.</p>
+      <p>Compare a draft recommendation with earlier HRW wording and see where it differs.</p>
     </section>
 
     <section class="panel composer" aria-labelledby="draft-label">
       <div class="panel-head">
         <label id="draft-label" for="draft" class="panel-title">Draft recommendation</label>
-        <span class="hint">Paste or write it below, or upload a Word, PowerPoint, PDF or text file</span>
+        <input id="file" type="file" hidden accept=".docx,.pptx,.pdf,.txt">
+        <button id="upload" type="button" class="upload" title="Word, PowerPoint, PDF or text file, up to 5 MB">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.5l-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l9-9a3.7 3.7 0 0 1 5.2 5.2l-9 9a1.8 1.8 0 0 1-2.6-2.6l8.4-8.4"/></svg>
+          <span>Attach file</span>
+        </button>
       </div>
       <textarea id="draft" rows="4" maxlength="4000" spellcheck="true"
         placeholder="e.g. The Lebanese authorities should strengthen judicial independence."></textarea>
@@ -44,15 +48,8 @@
       </div>
 
       <div class="composer-foot">
-        <div class="composer-tools">
-          <input id="file" type="file" hidden accept=".docx,.pptx,.pdf,.txt">
-          <button id="upload" type="button" class="btn outline" title="Word, PowerPoint, PDF or text file, up to 5 MB">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
-            <span class="btn-label">Upload document</span>
-          </button>
-          <div class="examples" id="examples" aria-label="Example drafts">
-            <span class="examples-label">Examples</span>
-          </div>
+        <div class="examples" id="examples" aria-label="Example drafts">
+          <span class="examples-label">Examples</span>
         </div>
         <div class="composer-actions">
           <span id="count" class="count" aria-hidden="true">0 / 4000</span>

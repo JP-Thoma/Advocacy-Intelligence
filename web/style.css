@@ -71,7 +71,7 @@ h1, h2, h3, p { margin: 0; }
 .brand-name { font-size: 1.02rem; font-weight: 650; letter-spacing: -.012em; }
 
 .page { max-width: 960px; margin: 0 auto; padding: 1.75rem 1.25rem 3rem; display: grid; gap: 1.25rem; }
-.intro { max-width: 720px; color: var(--ink-2); font-size: 1.02rem; line-height: 1.65; }
+.intro { color: var(--ink-2); font-size: 1.05rem; }
 
 /* Panels */
 .panel {
@@ -93,7 +93,12 @@ input[readonly] { background: var(--surface-2); color: var(--muted); }
 ::placeholder { color: var(--muted); opacity: .85; }
 
 .composer-foot { display: flex; flex-wrap: wrap; gap: .85rem 1rem; align-items: center; justify-content: space-between; margin-top: .85rem; }
-.composer-tools { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; }
+.upload {
+  display: inline-flex; align-items: center; gap: .4rem; font: inherit; font-size: .84rem; font-weight: 550;
+  color: var(--ink-2); background: transparent; border: 0; border-radius: 6px; padding: .2rem .45rem; cursor: pointer;
+}
+.upload:hover:not(:disabled) { color: var(--accent); background: var(--accent-soft); }
+.upload:disabled { opacity: .6; cursor: progress; }
 .examples { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
 .examples-label { font-size: .8rem; color: var(--muted); margin-right: .1rem; }
 .example {
@@ -256,3 +261,7 @@ mark { background: var(--mark); color: inherit; border-radius: 3px; padding: .02
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Examples on their own row so the action row stays tidy */
+.examples { flex: 1 1 100%; }
+.example { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

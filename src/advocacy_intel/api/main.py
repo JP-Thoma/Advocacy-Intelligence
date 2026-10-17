@@ -55,5 +55,14 @@ async def extract(request: Request, filename: str = "") -> dict[str, object]:
     return {"paragraphs": paragraphs, "truncated": truncated}
 
 
+class RevalidatingStaticFiles(StaticFiles):
+    """Static files that browsers must revalidate (ETag) so edits show up on reload."""
+
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 if WEB_DIR.is_dir():
-    app.mount("/", StaticFiles(directory=WEB_DIR, html=True), name="web")
+    app.mount("/", RevalidatingStaticFiles(directory=WEB_DIR, html=True), name="web")
