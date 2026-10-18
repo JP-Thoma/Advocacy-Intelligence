@@ -1,35 +1,77 @@
-# Build plan v1 (revised 2026-10-16)
+# Build plan v3 (revised 2026-10-18)
 
 Principle: small → working → measurable → defensible. Each milestone has an exit criterion; do not start the next until it is met.
 
-Change from v0: M0 (corpus and pairs) and M2 (gold labels) merged into one human labelling pass (see docs/labelling-guide.md), because both answer keys come from one read of the source. Corpus fixed at the 9 downloaded Lebanon reports (D24).
+Changes from v2: the demo is live from the user's own machine (D32), so app hosting is a stretch goal, not a milestone. Azure backing services (OpenAI, Search, Blob) are needed regardless and come first. Testing is a continuous track plus a later evaluation milestone.
 
 ## Logical architecture
 
 ```
-INGEST (batch)
-HRW HTML / PDF -> text extraction -> LLM proposes recommendation spans + metadata
+INGEST (batch, local script)
+HRW PDF -> text extraction -> deterministic cleaner -> LLM proposes quoted spans + metadata
   -> verbatim verifier (code) -> normalise actor/topic -> record JSON (Blob, system of record)
-  -> embed (enriched text) -> AI Search index (derived)
+  -> embed (enriched + bare text) -> AI Search index (derived)
 
-REVIEW (online)
-draft text / uploaded PDF -> same extractor + verifier -> editable "how I understood your draft"
-  -> hybrid retrieval (vector + keyword + boosts) -> top precedents with matched dimensions
+REVIEW (online, app runs locally)
+draft text / uploaded file -> split -> parse draft (editable) -> hybrid retrieval
+  -> top precedents with matched dimensions
   -> comparison (code for facts, LLM for language, every claim quote-verified)
   -> UI: verbatim prior wording, differences, source link
 ```
+
+Local app authenticates to Azure with the developer identity (`az login`, `DefaultAzureCredential`) and RBAC roles. This is the same code path managed identity uses in the cloud. No keys in code or config.
+
+## Block 1: backend wired to the frontend
+
+Already real (deterministic, no Azure): `/api/split`, `/api/extract`, static frontend. Still mock: `/api/check`.
+
+Rule: the contract in `src/advocacy_intel/models/` stays stable. Each step replaces one mock behind the same endpoint. The mock banner stays until nothing is mocked.
+
+| Step | Replaces | Exit |
+|---|---|---|
+| Cleaner | new | Deterministic cleaning with the "delete/join only" invariant test (D26) |
+| Extractor + verifier | new, offline | Records with source page and `cleaning_version`; per-document no-text page report (D27) |
+| Index + retrieval | mock precedents | Hybrid query returns real records for a draft |
+| Comparison | mock differences | Code facts + LLM language dimensions, quotes verified |
+| `/api/check` | `_load_mock` | Mock banner removed only when nothing is mocked |
+
+## Block 2: Azure backing services (hosting is a stretch goal)
+
+| Step | Content | Exit |
+|---|---|---|
+| Subscription | New personal subscription (D31), budget alert, resource providers registered, Azure CLI | `az account show` works; budget alert exists |
+| Foundation as code (Bicep) | Resource group `rg-advocacy-poc` with tags; Storage (Blob); Azure OpenAI (chat + embedding deployments, low quota); AI Search created only at the retrieval milestone | Create and destroy reproducibly |
+| Identity | RBAC roles for the developer identity: OpenAI user, Search data contributor, Blob data contributor | App runs with no secrets |
+| Stretch: hosting | Dockerfile, container registry, Container Apps, App Insights, sign-in | Only if time remains; otherwise documented in the architecture diagram |
+
+Cost rules: budget alert first; low token quota on model deployments; create AI Search when M6 starts; delete the resource group after the demo.
+
+## Block 3: testing
+
+Continuous (starts now, runs on every PR):
+- Unit tests for pure logic (cleaner, verifier, deterministic comparisons, splitting).
+- API tests with fixtures (existing).
+- CI gate on pull requests: `pytest` and `ruff`.
+
+Evaluation (after the real pipeline exists, before any quality claim):
+- Gold labels for the refugee trio (202409 held out, 201804, 202110) plus precedent links.
+- Extraction recall/precision, retrieval hit rate@5, comparison faithfulness, citation fidelity, per D16.
+- Anything real shown before this is labelled unevaluated.
+
+Demo fallback (D32): a cached example produced by the real pipeline and marked as cached, plus a recorded run. Never hand-written.
 
 ## Milestones
 
 | # | Milestone | Exit criterion |
 |---|---|---|
-| M0 | Corpus manifest (`data/sources.csv`, 9 reports) and fixture-driven scaffold | Merged to main; manifest IDs match files; tests pass |
-| M1 | Text extraction experiment on the PDFs (reading order, headers/footers, footnotes, hyphenation, lists), run before any LLM | Decision on Document Intelligence (O5) with evidence |
-| M2 | Gold labels: all recommendations in the refugee trio (202409 held out, 201804, 202110) plus precedent links | Three YAML files in `eval/gold/`; at least 3 genuine precedent links, else revisit D24 |
-| M3 | Extraction + verifier, measured against the gold set; embedding variants compared on retrieval | Recall/precision numbers; embedding choice by data |
-| M4 | AI Search index, hybrid retrieval | Hit rate@5 on leave-one-out drafts |
-| M5 | Comparison step with quote verification | Faithfulness on synthetic drafts |
-| M6 | Real fixtures replace placeholders; UI polish pass; deployment | End-to-end demo |
-| M7 | Evaluation report; security redesign exercise; scale discussion | Interview artefacts |
+| M0 | Corpus manifest, fixture-driven scaffold | Done |
+| M1 | PDF text extraction probe | Done; decisions D25-D27 |
+| M2 | CI gate (pytest + ruff on PRs) | CI green on a PR |
+| M3 | Azure subscription + foundation as code (Storage, OpenAI) + RBAC + budget alert | Create/destroy reproducible; a local script calls the model keylessly |
+| M4 | Ingestion: cleaner, extractor (structured output), verifier, records in Blob | Records for the 3 trio reports; invariant test green; coverage report |
+| M5 | Gold labelling + extraction evaluation | Recall/precision measured; prompt tuning only after this |
+| M6 | AI Search index + hybrid retrieval, embedding variants compared | Hit rate@5 on leave-one-out drafts |
+| M7 | Comparison with quote verification; replace `/api/check` mock | Faithfulness measured; mock banner removed; cached demo example saved |
+| M8 | Security redesign (confidential HRW data), scale discussion, interview artefacts; stretch: hosting | Diagram, slides, demo |
 
-M1 and M2 can run in parallel: M2 is your reading, M1 is code on a separate branch.
+M5 labelling can run in parallel with M2-M4; it must finish before the extractor prompt is tuned.
