@@ -40,7 +40,9 @@ def test_low_text_pages_flags_sparse_pages():
 
 
 def test_recommendation_heading_allows_roman_numeral_prefix_but_not_toc_lines():
-    ps = pages("XII. Recommendations\nTo the Government", "XII. Recommendations " + "." * 80 + " 119")
+    ps = pages(
+        "XII. Recommendations\nTo the Government", "XII. Recommendations " + "." * 80 + " 119"
+    )
     assert recommendation_headings(ps)["recommendations"] == [1]  # dotted TOC line is too long
 
 

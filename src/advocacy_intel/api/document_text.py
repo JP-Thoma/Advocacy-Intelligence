@@ -70,9 +70,7 @@ def _from_docx(data: bytes) -> list[str]:
 def _from_pptx(data: bytes) -> list[str]:
     try:
         with zipfile.ZipFile(io.BytesIO(data)) as zf:
-            slides = sorted(
-                (int(m.group(1)), n) for n in zf.namelist() if (m := _SLIDE.match(n))
-            )
+            slides = sorted((int(m.group(1)), n) for n in zf.namelist() if (m := _SLIDE.match(n)))
             if not slides:
                 raise KeyError("no slides")
             out: list[str] = []

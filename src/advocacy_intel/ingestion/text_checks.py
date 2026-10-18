@@ -7,6 +7,7 @@ All checks are heuristics that surface candidates for a human to inspect; none i
 import re
 from collections import Counter
 from dataclasses import dataclass
+from itertools import pairwise
 
 
 @dataclass(frozen=True)
@@ -46,15 +47,16 @@ def repeated_edge_lines(
 
 def glued_footnotes(text: str) -> list[str]:
     """Snippets where a footnote number appears fused to the preceding word."""
-    return [text[max(0, m.start() - 25) : m.end() + 5].replace("\n", " ") for m in _GLUED_FOOTNOTE.finditer(text)]
+    return [
+        text[max(0, m.start() - 25) : m.end() + 5].replace("\n", " ")
+        for m in _GLUED_FOOTNOTE.finditer(text)
+    ]
 
 
 def hyphen_breaks(text: str) -> int:
     """Count lines ending in 'letter-' followed by a lowercase-starting line."""
     ls = _lines(text)
-    return sum(
-        1 for a, b in zip(ls, ls[1:], strict=False) if _HYPHEN_BREAK.search(a) and b[:1].islower()
-    )
+    return sum(1 for a, b in pairwise(ls) if _HYPHEN_BREAK.search(a) and b[:1].islower())
 
 
 def low_text_pages(pages: list[PageText], min_chars: int = 200) -> list[int]:

@@ -24,7 +24,9 @@ def _zip(members: dict[str, str]) -> bytes:
 
 def _docx(paragraphs: list[str]) -> bytes:
     body = "".join(f"<w:p><w:r><w:t>{p}</w:t></w:r></w:p>" for p in paragraphs)
-    return _zip({"word/document.xml": f'<w:document xmlns:w="{_W}"><w:body>{body}</w:body></w:document>'})
+    return _zip(
+        {"word/document.xml": f'<w:document xmlns:w="{_W}"><w:body>{body}</w:body></w:document>'}
+    )
 
 
 def _pptx(slides: list[list[str]]) -> bytes:
