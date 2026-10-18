@@ -41,7 +41,9 @@ class Difference(BaseModel):
 
 class Precedent(BaseModel):
     recommendation: Recommendation
-    matched_dimensions: list[str] = Field(description="Why this was retrieved, e.g. ['actor','issue']")
+    matched_dimensions: list[str] = Field(
+        description="Why this was retrieved, e.g. ['actor','issue']"
+    )
     relevance: float = Field(ge=0, le=1, description="Retrieval relevance, not a policy judgement")
     differences: list[Difference] = Field(default_factory=list)
 

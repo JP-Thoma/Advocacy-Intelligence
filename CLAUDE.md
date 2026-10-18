@@ -13,7 +13,8 @@ py -3.14 -m venv .venv
 .venv\Scripts\python -m pip install -e ".[dev]"     # pip downloads can time out; add --default-timeout=120 --retries 8
 .venv\Scripts\python -m pytest                      # all tests
 .venv\Scripts\python -m pytest tests/test_api.py::test_health   # single test
-.venv\Scripts\python -m ruff check src tests
+.venv\Scripts\python -m ruff check src tests        # CI also runs: ruff format --check src tests
+.venv\Scripts\python -m ruff format src tests       # fix formatting (CI fails on unformatted code)
 .venv\Scripts\python -m uvicorn advocacy_intel.api.main:app --reload   # UI at http://127.0.0.1:8000
 ```
 

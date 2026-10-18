@@ -17,7 +17,9 @@ class Recommendation(BaseModel):
 
     target_actor_raw: str = Field(description="Actor string exactly as written in the source")
     target_actor: str | None = Field(default=None, description="Normalised actor (model-generated)")
-    action_requested: str | None = Field(default=None, description="Short summary (model-generated)")
+    action_requested: str | None = Field(
+        default=None, description="Short summary (model-generated)"
+    )
     topic: list[str] = Field(default_factory=list, description="Normalised (model-generated)")
     geography: list[str] = Field(default_factory=list)
 
