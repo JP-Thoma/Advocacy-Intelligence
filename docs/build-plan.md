@@ -67,7 +67,7 @@ Demo fallback (D32): a cached example produced by the real pipeline and marked a
 | M0 | Corpus manifest, fixture-driven scaffold | Done |
 | M1 | PDF text extraction probe | Done; decisions D25-D27 |
 | M2 | CI gate (pytest + ruff on PRs) | CI green on a PR |
-| M3 | Azure subscription + foundation as code (Storage, OpenAI) + RBAC + budget alert | Create/destroy reproducible; a local script calls the model keylessly |
+| M3 | Azure subscription + foundation as code (Storage, OpenAI) + RBAC + budget alert | **Done.** Keyless chat (`gpt-4o`, regional, Sweden Central), embedding (3072 dims) and blob write verified by `scripts/smoke_models.py`; destroy path is `az group delete` (not yet exercised) |
 | M4 | Ingestion: cleaner, extractor (structured output), verifier, records in Blob | Records for the 3 trio reports; invariant test green; coverage report |
 | M5 | Gold labelling + extraction evaluation | Recall/precision measured; prompt tuning only after this |
 | M6 | AI Search index + hybrid retrieval, embedding variants compared | Hit rate@5 on leave-one-out drafts |
