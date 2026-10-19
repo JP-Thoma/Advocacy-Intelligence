@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-Early scaffold: Pydantic contracts, a fixture-backed FastAPI endpoint and a thin static frontend. The Azure foundation exists as code in `infra/` (Bicep: Storage + keyless Azure OpenAI in Sweden Central, deployments `chat` and `embedding`; `scripts/smoke_models.py` verifies it; deploy and teardown commands are in `infra/main.bicep` and `docs/m3-azure-setup.md`). The app itself is not wired to Azure yet; `/api/check` returns `src/advocacy_intel/fixtures/mock_check.json` (placeholder, clearly not HRW text). Planning docs live in `docs/` (`decision-log.md`, `build-plan.md`, `architecture.md`); consult and update the decision log when a decision is made.
+Early scaffold: Pydantic contracts, a fixture-backed FastAPI endpoint and a thin static frontend. The Azure foundation exists as code in `infra/` (Bicep: Storage + keyless Azure OpenAI in Sweden Central, deployments `chat` and `embedding`; `scripts/smoke_models.py` verifies it; deploy and teardown commands are in `infra/main.bicep` and `docs/m3-azure-setup.md`). The app itself is not wired to Azure yet; `/api/check` returns `src/advocacy_intel/fixtures/mock_check.json` (placeholder, clearly not HRW text). **Resume here:** the current plan is `docs/thursday-plan.md` (interview-deadline scope; comparison deferred, D37) and the authoritative decisions are in `docs/decision-log.md`. Planning docs live in `docs/` (`decision-log.md`, `build-plan.md`, `architecture.md`); consult and update the decision log when a decision is made.
 
 ## Commands (Windows; Python 3.14 via `py`)
 

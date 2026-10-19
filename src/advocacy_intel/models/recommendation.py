@@ -27,3 +27,13 @@ class Recommendation(BaseModel):
     document_title: str
     document_type: str
     source_url: str | None = Field(default=None, description="Link to the original publication")
+
+    # Provenance written by ingestion (D26, D38). Optional so fixtures and old records stay valid.
+    source_page: int | None = Field(default=None, description="PDF page where the quote starts")
+    source_end_page: int | None = Field(default=None, description="PDF page where it ends")
+    cleaning_version: str | None = None
+    segmenter_version: str | None = None
+    extraction: str | None = Field(
+        default=None,
+        description="Prompt version and model that produced the model-generated fields",
+    )
