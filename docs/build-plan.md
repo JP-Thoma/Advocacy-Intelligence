@@ -68,9 +68,9 @@ Demo fallback (D32): a cached example produced by the real pipeline and marked a
 | M1 | PDF text extraction probe | Done; decisions D25-D27 |
 | M2 | CI gate (pytest + ruff on PRs) | CI green on a PR |
 | M3 | Azure subscription + foundation as code (Storage, OpenAI) + RBAC + budget alert | **Done.** Keyless chat (`gpt-4o`, regional, Sweden Central), embedding (3072 dims) and blob write verified by `scripts/smoke_models.py`; destroy path is `az group delete` (not yet exercised) |
-| M4 | Ingestion: cleaner, extractor (structured output), verifier, records in Blob | Records for the 3 trio reports; invariant test green; coverage report |
-| M5 | Gold labelling + extraction evaluation | Recall/precision measured; prompt tuning only after this |
-| M6 | AI Search index + hybrid retrieval, embedding variants compared | Hit rate@5 on leave-one-out drafts |
+| M4 | Ingestion: cleaner, extractor (structured output), verifier, records in Blob | **Done (2026-10-20).** 105 records for the trio in Blob; invariant test green; coverage report; 101 labelled, 4 blocked by Azure's content filter (D38, D39) |
+| M5 | Gold labelling + extraction evaluation | **Partly done.** One report (202409) hand-labelled: 33/33 matched exactly (D41). Other two reports only checked by bullet-glyph count; no metadata (actor/topic) evaluation; no prompt tuning |
+| M6 | AI Search index + hybrid retrieval, embedding variants compared | **Partly done (2026-10-21).** Real retrieval by cosine over embedded records, wired into `/api/check` (D42). AI Search written (Bicep, schema, service) but not deployed or tested live; no hit rate@5 (no labelled precedent pairs); no embedding comparison |
 | M7 | Comparison with quote verification; replace `/api/check` mock | Faithfulness measured; mock banner removed; cached demo example saved |
 | M8 | Security redesign (confidential HRW data), scale discussion, interview artefacts; stretch: hosting | Diagram, slides, demo |
 

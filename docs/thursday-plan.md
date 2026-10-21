@@ -32,3 +32,18 @@ Thursday: rehearsal only. No new features.
 ## Cost decision
 
 AI Search Basic has a fixed monthly cost while it exists, billed in small increments; check the price shown when creating it. Raise the monthly budget deliberately before creating it (user agreed; suggested 100), create it in Session 2, delete the resource group after the demo.
+
+## Status at the end of 2026-10-21 (about 03:00; interview is Thursday 2026-10-22)
+
+Done and tested (100 tests, ruff clean): Session 1 in full (cleaner, segmenter, verifier, per-unit labeller, records in Blob, gold check 33/33 on 202409) and the guaranteed part of Session 2: embeddings, cosine retrieval, `/api/check` real mode, UI wording "Wording not compared yet". See `docs/runbook.md` for how to run it and `docs/decision-log.md` D38-D42 for the reasons.
+
+Not done:
+- AI Search is written (Bicep behind `deploySearch=false`, index schema, service functions) but **not deployed and never run live**. Decision gate unchanged: only if at least 2 hours remain, the budget has been raised, and it does not cost the interview preparation. Otherwise present it as the designed component.
+- The real UI was seen working by the user at night; a careful review is planned for the morning. The standing check list: no mock banner, "Wording not compared yet" on cards, quote with source, page and link, nothing from the fixture beside real results.
+- Session 3 items: save a cached example from the real pipeline (marked as cached) and record a run; interview preparation of at least 2.5 hours (architecture diagram, responsible-AI story, confidential-data redesign, scale to 100k documents and 500 daily users, mock architecture review).
+- No labelled precedent pairs, so retrieval is looked at, not scored; no relevance cutoff (D31, D42).
+- The Azure login must be redone on the day (tokens last about a day, device code is blocked: runbook section 0). Do this well before the interview and test `/api/check` once.
+
+Suggested order for the remaining time: (1) review the UI and run one end-to-end check, (2) commit and merge, (3) cached example plus recording, (4) interview preparation, (5) AI Search only if time is left over. Thursday: rehearsal only, no new features.
+
+Cleanup after the demo: `az group delete --name rg-advocacy-poc` and delete the demo user in the personal directory.

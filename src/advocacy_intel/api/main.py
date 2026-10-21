@@ -1,13 +1,15 @@
+from functools import lru_cache
 from importlib import resources
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from advocacy_intel.api.document_text import MAX_UPLOAD_BYTES, DocumentError, extract_paragraphs
 from advocacy_intel.api.splitting import split_recommendations
-from advocacy_intel.models import CheckRequest, CheckResponse
+from advocacy_intel.models import CheckRequest, CheckResponse, DraftParse, Provenance
+from advocacy_intel.retrieval.precedents import PrecedentRetriever, from_environment
 
 WEB_DIR = Path(__file__).resolve().parents[3] / "web"
 
@@ -24,9 +26,51 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+REAL_NOTICE = (
+    "This tool retrieves prior HRW wording. It does not compare wording yet and does not assess "
+    "consistency with HRW policy. The author and reviewers decide."
+)
+
+
+@lru_cache
+def _retriever() -> PrecedentRetriever | None:
+    return from_environment()
+
+
+def get_retriever() -> PrecedentRetriever | None:
+    """None means 'serve the fixture'. A broken real setup is an error, never a silent mock."""
+    try:
+        return _retriever()
+    except Exception as exc:
+        raise HTTPException(503, f"Retrieval is switched on but not available: {exc}") from exc
+
+
 @app.post("/api/check", response_model=CheckResponse)
-def check(req: CheckRequest) -> CheckResponse:
-    """Check a draft against prior recommendations. Fixture-backed until M3-M5."""
+def check(
+    req: CheckRequest,
+    retriever: PrecedentRetriever | None = Depends(get_retriever),  # noqa: B008
+) -> CheckResponse:
+    """Check a draft against prior recommendations.
+
+    Real retrieval (no comparison) when ADVOCACY_RETRIEVAL=azure-cosine, else the fixture."""
+    if retriever is not None:
+        try:
+            precedents = retriever.find(req.draft_text, req.target_actor)
+        except Exception as exc:
+            raise HTTPException(503, f"Retrieval failed: {exc}") from exc
+        return CheckResponse(
+            draft=DraftParse(
+                text=req.draft_text,
+                target_actor=req.target_actor,
+                topic=req.topic or [],
+                geography=req.geography or [],
+                provenance=Provenance.FOR_HUMAN_REVIEW,  # only what the user typed; nothing inferred
+            ),
+            precedents=precedents,
+            notice=REAL_NOTICE,
+            is_mock=False,
+            comparison_performed=False,
+        )
     resp = _load_mock()
     resp.draft.text = req.draft_text
     if req.target_actor is not None:

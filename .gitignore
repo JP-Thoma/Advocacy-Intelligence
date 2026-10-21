@@ -223,3 +223,7 @@ __marimo__/
 data/*
 !data/sources.csv
 .env
+
+# Hand-labelled gold files contain verbatim HRW text (D23); only the template is committed
+eval/gold/*
+!eval/gold/TEMPLATE.yaml

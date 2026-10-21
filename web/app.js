@@ -263,7 +263,10 @@ function renderHead(item) {
       dims.slice(0, 4).forEach((d) => meta.append(el("span", "tag", dimLabel(d))));
       if (dims.length > 4) meta.append(el("span", "tag", `+${dims.length - 4}`));
     } else if (all.length) {
-      meta.append(el("span", "item-state", "No differences noted"));
+      // an empty list only means "no differences" when a comparison was actually run (D37)
+      meta.append(el("span", "item-state", item.data.comparison_performed === false
+        ? "Wording not compared yet"
+        : "No differences noted"));
     }
   }
   main.append(meta);
