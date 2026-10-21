@@ -70,3 +70,8 @@ class CheckResponse(BaseModel):
     precedents: list[Precedent]
     notice: str = Field(description="Standing statement that humans decide")
     is_mock: bool = Field(description="True while responses come from fixtures")
+    comparison_performed: bool = Field(
+        default=True,
+        description="False when precedents were retrieved but no comparison was run (D37), "
+        "so an empty differences list must not be read as 'no differences'",
+    )

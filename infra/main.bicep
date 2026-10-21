@@ -32,6 +32,9 @@ param embeddingModelVersion string = '1'
 @allowed(['Standard', 'DataZoneStandard', 'GlobalStandard'])
 param embeddingSkuName string = 'Standard'
 
+@description('Create Azure AI Search (Basic, fixed hourly cost while it exists). Off by default: turn on deliberately, after raising the budget (see docs/thursday-plan.md).')
+param deploySearch bool = false
+
 var resourceGroupName = 'rg-advocacy-poc'
 var tags = {
   project: 'advocacy-intelligence'
@@ -63,9 +66,20 @@ module foundation 'modules/foundation.bicep' = {
   }
 }
 
+module search 'modules/search.bicep' = if (deploySearch) {
+  name: 'search'
+  scope: rg
+  params: {
+    location: location
+    tags: tags
+    principalId: principalId
+  }
+}
+
 output resourceGroupName string = rg.name
 output storageAccountName string = foundation.outputs.storageAccountName
 output storageBlobEndpoint string = foundation.outputs.storageBlobEndpoint
 output openAiEndpoint string = foundation.outputs.openAiEndpoint
 output chatDeployment string = foundation.outputs.chatDeployment
 output embeddingDeployment string = foundation.outputs.embeddingDeployment
+output searchEndpoint string = deploySearch ? search!.outputs.searchEndpoint : ''
