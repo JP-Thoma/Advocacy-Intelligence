@@ -44,7 +44,7 @@ def run(doc_id: str, k: int = 3) -> str:
     for d in drafts:
         hits = retriever.find(
             d.recommendation_text, d.target_actor_raw, k=k, exclude_documents=[doc_id]
-        )
+        ).precedents
         for h in hits:
             retrieved_from[_doc(h.recommendation.recommendation_id)] += 1
         if hits and _actor_words(d.target_actor_raw) & _actor_words(

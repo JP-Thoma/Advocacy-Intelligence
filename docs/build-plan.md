@@ -72,6 +72,6 @@ Demo fallback (D32): a cached example produced by the real pipeline and marked a
 | M5 | Gold labelling + extraction evaluation | **Partly done.** One report (202409) hand-labelled: 33/33 matched exactly (D41). Other two reports only checked by bullet-glyph count; no metadata (actor/topic) evaluation; no prompt tuning |
 | M6 | AI Search index + hybrid retrieval, embedding variants compared | **Partly done (2026-10-21).** Real retrieval by cosine over embedded records, wired into `/api/check` (D42). AI Search written (Bicep, schema, service) but not deployed or tested live; no hit rate@5 (no labelled precedent pairs); no embedding comparison |
 | M7 | Comparison with quote verification; replace `/api/check` mock | Faithfulness measured; mock banner removed; cached demo example saved |
-| M8 | Security redesign (confidential HRW data), scale discussion, interview artefacts; stretch: hosting | Diagram, slides, demo |
+| M8 | Security redesign (confidential HRW data), scale discussion, presentation artefacts; stretch: hosting | Diagram, slides, demo |
 
 M5 labelling can run in parallel with M2-M4; it must finish before the extractor prompt is tuned.

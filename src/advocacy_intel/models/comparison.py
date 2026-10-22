@@ -70,6 +70,10 @@ class CheckResponse(BaseModel):
     precedents: list[Precedent]
     notice: str = Field(description="Standing statement that humans decide")
     is_mock: bool = Field(description="True while responses come from fixtures")
+    hidden_below_threshold: int = Field(
+        default=0,
+        description="Candidates dropped because their text similarity was below the threshold",
+    )
     comparison_performed: bool = Field(
         default=True,
         description="False when precedents were retrieved but no comparison was run (D37), "

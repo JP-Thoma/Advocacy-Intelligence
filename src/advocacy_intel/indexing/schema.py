@@ -5,7 +5,7 @@ The index is DERIVED: records in Blob are the system of record, and this index c
 and rebuilt from them without re-running extraction. The version in the name marks the shape.
 
 Choices, each with a reason:
-- One index, one vector field (thursday-plan): hybrid = vector similarity + keyword (BM25).
+- One index, one vector field (delivery plan): hybrid = vector similarity + keyword (BM25).
 - Vectors are computed in our code, not by an index-side vectorizer: one visible embedding path
   that is also reused for the draft at query time, and the fallback needs no Search service.
 - HNSW with cosine. At ~100 vectors an exact scan would be as fast; HNSW is kept because it is

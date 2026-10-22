@@ -13,7 +13,7 @@ Never paste subscription IDs, keys, tokens or card details into chat or commit t
 
 ## Part A: you (about 45 minutes)
 
-1. Create or reuse a personal Microsoft account with MFA. Do not use the Capgemini email.
+1. Create or reuse a personal Microsoft account with MFA. Do not use an employer email.
 2. Sign up at the Azure free account page. Verify phone and card.
 3. Portal: Cost Management + Billing, create a budget (small amount you accept losing) with email alerts at 50%, 80%, 100%. Alerts lag by hours; they warn, they do not stop spending.
 4. Install the CLI and log in (PowerShell):
@@ -47,7 +47,7 @@ Never paste subscription IDs, keys, tokens or card details into chat or commit t
 ## Decisions you must make before B2/B3 (answer with a reason)
 
 1. **Shared keys and local auth.** Storage can disable shared-key access, and Azure OpenAI can disable key-based auth, forcing Entra tokens only. What does that buy, what does it cost you while developing, and would you turn it on from day one?
-2. **Region and deployment type.** Which EU region, and a regional/EU data-zone deployment or a global one? Decide from the quota table and the data-residency sentence you want to say in the interview.
+2. **Region and deployment type.** Which EU region, and a regional/EU data-zone deployment or a global one? Decide from the quota table and the data-residency statement you want to be able to make.
 3. **Embedding model.** A smaller or larger embedding model? Think about vector dimensions, index size, cost per token, and what retrieval quality you can measure. Which would you start with, and what result would make you switch?
 4. **Chat model for extraction.** Decision D29 says start small. Which size tier is available to you in the region, and what recall on the gold set would make you move up?
 5. **Naming.** A convention such as `<type>-advocacy-poc-<env>`. Storage names must be globally unique and lowercase, so what suffix will you use?
