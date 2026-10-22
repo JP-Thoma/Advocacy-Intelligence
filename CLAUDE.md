@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-Working POC for the refugee trio (202409, 201804, 202110), state at the end of 2026-10-21. Done and tested: ingestion (cleaner, segmenter, verifier, per-unit labeller, records in Blob; D38-D39), embeddings, and real "find precedent" retrieval wired into `/api/check` (cosine over a local vector file; D42). The Azure foundation exists as code in `infra/` (Bicep: Storage + keyless Azure OpenAI in Sweden Central, deployments `chat` and `embedding`; AI Search written but behind `deploySearch=false` and **not deployed**). Without `ADVOCACY_RETRIEVAL=azure-cosine` the API still serves the mock fixture `src/advocacy_intel/fixtures/mock_check.json` (placeholder, clearly not HRW text); comparison/differences are not built (D37). **Resume here:** read `docs/runbook.md` (how to run everything, and the Azure sign-in workaround: device-code login is blocked), then `docs/thursday-plan.md` (status and what is left) and `docs/decision-log.md` (authoritative decisions, D1-D42). Planning docs live in `docs/` (`decision-log.md`, `build-plan.md`, `architecture.md`, `labelling-guide.md`); consult and update the decision log when a decision is made.
+Working POC for the refugee trio (202409, 201804, 202110), state on 2026-10-22. Done and tested: ingestion (cleaner, segmenter, verifier, per-unit labeller, records in Blob; D38-D39), embeddings, and real "find precedent" retrieval wired into `/api/check` (cosine over a local vector file, with a relevance threshold that hides clearly unrelated text; D42, D43). The Azure foundation exists as code in `infra/` (Bicep: Storage + keyless Azure OpenAI in Sweden Central, deployments `chat` and `embedding`; AI Search written but behind `deploySearch=false` and **not deployed**). Without `ADVOCACY_RETRIEVAL=azure-cosine` the API still serves the mock fixture `src/advocacy_intel/fixtures/mock_check.json` (placeholder, clearly not HRW text); comparison/differences are not built (D37). **Resume here:** read `docs/runbook.md` (how to run everything, and the Azure sign-in workaround: device-code login is blocked), then `docs/delivery-plan.md` (status and what is left) and `docs/decision-log.md` (authoritative decisions, D1-D44). Planning docs live in `docs/` (`decision-log.md`, `build-plan.md`, `architecture.md`, `labelling-guide.md`); consult and update the decision log when a decision is made.
 
 ## Commands (Windows; Python 3.14 via `py`)
 
@@ -20,11 +20,11 @@ py -3.14 -m venv .venv
 
 ## Structure
 
-`src/advocacy_intel/models/` holds the shared Pydantic contract (`Recommendation`, `Difference`, `Precedent`, `CheckResponse`); the API, the future ingestion/indexing/retrieval/comparison packages and the frontend all depend on it, so change the schema there first. The frontend (`web/`) is plain HTML/JS served by FastAPI and must insert external text with `textContent`, never `innerHTML`. Existing packages: `ingestion/` (slow batch: PDF → `clean.py` → `segment.py` → `verify.py` → `extract.py` labels → records via `ingest.py`; the model never writes a quote and never sees an ID, D38), `indexing/` (`schema.py` index definition as pure data, `embedding_text.py`, `vectors.py` local vector store, `service.py` Azure Search/embedding calls with lazy SDK imports and untested against a live service, `fallback.py` cosine), `retrieval/` (`precedents.py`), `evaluation/` (`gold_check.py`, `heldout.py`). Planned but not yet created: `comparison/`, `llm/`. Tests that read real HRW text skip themselves when `data/` is absent. `data/` is gitignored except `data/sources.csv` (manifest); `eval/gold/*` is gitignored except `TEMPLATE.yaml` (verbatim HRW text, D23); `prompts/` holds versioned prompts.
+`src/advocacy_intel/models/` holds the shared Pydantic contract (`Recommendation`, `Difference`, `Precedent`, `CheckResponse`); the API, the future ingestion/indexing/retrieval/comparison packages and the frontend all depend on it, so change the schema there first. The frontend (`web/`) is plain HTML/JS served by FastAPI and must insert external text with `textContent`, never `innerHTML`. Existing packages: `ingestion/` (slow batch: PDF → `clean.py` → `segment.py` → `verify.py` → `extract.py` labels → records via `ingest.py`; the model never writes a quote and never sees an ID, D38), `indexing/` (`schema.py` index definition as pure data, `embedding_text.py`, `vectors.py` local vector store, `service.py` Azure Search/embedding calls with lazy SDK imports and untested against a live service, `fallback.py` cosine), `retrieval/` (`precedents.py`), `evaluation/` (`gold_check.py`, `heldout.py`, `threshold_check.py`). Planned but not yet created: `comparison/`, `llm/`. Tests that read real HRW text skip themselves when `data/` is absent. `data/` is gitignored except `data/sources.csv` (manifest); `eval/gold/*` is gitignored except `TEMPLATE.yaml` (verbatim HRW text, D23); `prompts/` holds versioned prompts.
 
 ## What this is
 
-An interview-preparation proof of concept (Human Rights Watch, AI Strategy & Solutions Lead, second round): the **HRW Recommendation Consistency Assistant** on Azure.
+A proof of concept: the **HRW Recommendation Consistency Assistant** on Azure, a reference implementation for an advocacy organisation such as Human Rights Watch.
 
 A user drafting or reviewing a recommendation manually invokes "Check against previous HRW recommendations". The system retrieves relevant prior HRW recommendations (exact wording, source, date, target actor, geography, topic, context, relevance) and highlights differences in wording, scope, target actor, geography, framing, requested action, specificity, strength of language and safeguards.
 
@@ -42,12 +42,12 @@ Use only public facts about HRW (Investigate → Expose → Change; researchers 
 
 ## How to work in this repo: teaching mode
 
-The user is also learning Azure AI architecture. Act as implementation partner **and** architecture mentor:
+Act as implementation partner **and** architecture sounding board:
 
 - Before any major decision: ask the user what they would choose and why, challenge the reasoning, explain trade-offs, and only then recommend. Be explicit about mistakes and do not agree automatically.
 - Do not pick Azure services automatically. Each component needs a stated architectural purpose. Call out over-engineering and designs that are too generic. No code before the architecture is agreed.
-- Periodically quiz the user, ask for the architecture from memory, and ask for explanations aimed at a CIO, a product manager and an engineer.
-- Phases: 1 framing → 2 architecture → 3 ingestion → 4 structured extraction → 5 retrieval and comparison → 6 UI → 7 evaluation → 8 security redesign (confidential HRW data) → 9 scale (100k documents, 500 daily users) → 10 interview artefacts (diagram, use-case, responsible-AI and roadmap slides, demo).
+- Periodically ask the user to explain the architecture from memory and to explain it for different audiences (executive, product manager, engineer).
+- Phases: 1 framing → 2 architecture → 3 ingestion → 4 structured extraction → 5 retrieval and comparison → 6 UI → 7 evaluation → 8 security redesign (confidential HRW data) → 9 scale (100k documents, 500 daily users) → 10 presentation artefacts (diagram, use-case, responsible-AI and roadmap slides, demo).
 - Record agreed decisions and their rationale in a decision log in the repo.
 
 ## Scope and constraints

@@ -2,7 +2,7 @@
 // Keyless like the rest: API keys are disabled, the developer identity gets roles.
 //
 // COST: Basic bills a fixed amount for every hour the service exists, whether or not it is used.
-// Check the price shown in the portal, raise the budget first (see docs/thursday-plan.md), and delete
+// Check the price shown in the portal, raise the budget first (see docs/delivery-plan.md), and delete
 // the resource group after the demo.
 
 param location string

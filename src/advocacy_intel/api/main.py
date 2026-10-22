@@ -55,7 +55,7 @@ def check(
     Real retrieval (no comparison) when ADVOCACY_RETRIEVAL=azure-cosine, else the fixture."""
     if retriever is not None:
         try:
-            precedents = retriever.find(req.draft_text, req.target_actor)
+            result = retriever.find(req.draft_text, req.target_actor)
         except Exception as exc:
             raise HTTPException(503, f"Retrieval failed: {exc}") from exc
         return CheckResponse(
@@ -66,7 +66,8 @@ def check(
                 geography=req.geography or [],
                 provenance=Provenance.FOR_HUMAN_REVIEW,  # only what the user typed; nothing inferred
             ),
-            precedents=precedents,
+            precedents=result.precedents,
+            hidden_below_threshold=result.hidden_below_threshold,
             notice=REAL_NOTICE,
             is_mock=False,
             comparison_performed=False,

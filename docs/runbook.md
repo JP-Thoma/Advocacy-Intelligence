@@ -1,11 +1,11 @@
-# Runbook: how to run everything (state at end of 2026-10-21)
+# Runbook: how to run everything (state on 2026-10-22)
 
 All commands are PowerShell from the repo root. Python is the project venv (`.venv\Scripts\python`).
 
 ## 0. Azure sign-in on the work laptop (read this first)
 
 - `az login --use-device-code` does **not** work: the tenant's security defaults block the device-code flow (error AADSTS530035, decision D42). It fails for the personal account and for the demo user alike.
-- Working route: `az login --tenant 82f46bc8-3db0-4e9c-a503-755d686cf5c7`. It opens a tab in the default (work) browser. Do not sign in there: copy the whole address from the address bar, close the tab, paste it into an **incognito** window, and sign in with the personal (gmx) account. The CLI receives the result on `localhost`, so this works from any browser on the same machine.
+- Working route: `az login --tenant <tenant id>`. It opens a tab in the default (work) browser. Do not sign in there: copy the whole address from the address bar, close the tab, paste it into an **incognito** window, and sign in with the personal (gmx) account. The CLI receives the result on `localhost`, so this works from any browser on the same machine.
 - Tokens expire after about a day. If a command prints `AADSTS`, `az logout` and log in again.
 - Check: `az account show --query user.name -o tsv` prints the gmx address.
 - Do not switch security defaults off and do not re-enable API keys (D35, D42).
@@ -13,12 +13,13 @@ All commands are PowerShell from the repo root. Python is the project venv (`.ve
 ## 1. Environment variables used below
 
 ```powershell
-$env:AZURE_OPENAI_ENDPOINT     = "https://oai-advocacy-jclfelxbeatrm.openai.azure.com/"
-$env:AZURE_STORAGE_ACCOUNT_URL = "https://stadvocacyjclfelxbeatrm.blob.core.windows.net/"
-$env:ADVOCACY_RETRIEVAL        = "azure-cosine"      # only for the app and the held-out check
+$env:AZURE_OPENAI_ENDPOINT     = "<openAiEndpoint>"
+$env:AZURE_STORAGE_ACCOUNT_URL = "<storageBlobEndpoint>"
+$env:ADVOCACY_RETRIEVAL        = "azure-cosine"      # only for the app and the checks below
+$env:ADVOCACY_MIN_RELEVANCE    = "0.42"              # optional; default is 0.42 (D43)
 ```
 
-Endpoints come from the deployment outputs: `az deployment group show -g rg-advocacy-poc -n foundation --query properties.outputs`.
+The real values for this setup (tenant id, endpoints) are kept in `docs/local/environment.md`, which is gitignored. They can always be read again from the deployment outputs: `az deployment group show -g rg-advocacy-poc -n foundation --query properties.outputs`.
 
 ## 2. Pipeline, in order (each step is derived from the one before)
 
@@ -29,6 +30,7 @@ Endpoints come from the deployment outputs: `az deployment group show -g rg-advo
 | Upload records to Blob | `... ingest --upload-only` | yes (Blob) | `records/recommendations/<id>.json` (done for the trio on 2026-10-20) |
 | Embed records | `.venv\Scripts\python -m advocacy_intel.indexing.vectors` | yes (embedding) | `data/index/vectors.json` (done 2026-10-21) |
 | Gold check | `.venv\Scripts\python -m advocacy_intel.evaluation.gold_check 202409_lebanon_syrianrefugeepushbacks` | no | `data/records/gold_check_<id>.md` |
+| Threshold calibration (is the cutoff still right?) | `.venv\Scripts\python -m advocacy_intel.evaluation.threshold_check 202409_lebanon_syrianrefugeepushbacks` | yes (embedding) | `data/records/threshold_check.md` |
 | Held-out retrieval check | `.venv\Scripts\python -m advocacy_intel.evaluation.heldout 202409_lebanon_syrianrefugeepushbacks` | yes (embedding) | `data/records/heldout_<id>.md` |
 
 Default documents are the refugee trio (201804, 202110, 202409). Raw PDFs are in `data/raw/`, never committed.
@@ -54,7 +56,7 @@ git status          # data/ and eval/gold/*.yaml must NOT appear; only eval/gold
 
 ## 5. AI Search (designed, not deployed)
 
-`infra/modules/search.bicep` is wired behind `deploySearch` (default false) in `infra/main.bicep`. Basic bills a fixed hourly amount while it exists. Raise the monthly budget first (docs/thursday-plan.md). Then:
+`infra/modules/search.bicep` is wired behind `deploySearch` (default false) in `infra/main.bicep`. Basic bills a fixed hourly amount while it exists. Raise the monthly budget first (docs/delivery-plan.md). Then:
 
 ```powershell
 $me = az ad signed-in-user show --query id -o tsv      # object id of the signed-in user (gets the Search roles)
@@ -73,6 +75,6 @@ The chat settings repeat D36 (`gpt-4o` 2024-11-20, regional Standard, capacity 1
 - Comparison (differences between draft and precedent) is not built (D37). The UI says "Wording not compared yet".
 - Extraction was gold-checked on one report (202409, 33/33); the other two reports only by an independent bullet-glyph count. Small sample, not a general accuracy claim.
 - 4 of 105 records have no model labels because Azure's content filter blocked them (D39); their quotes are still retrievable.
-- Retrieval always returns neighbours, even when no real precedent exists; no relevance cutoff is calibrated (D31, D42). No retrieval hit rate has been scored, because no precedent pairs are labelled.
+- A relevance threshold (0.42, D43) hides clearly unrelated text. It does not tell whether a true precedent exists, and it was calibrated on 44 texts; re-run `threshold_check` after any change of model, embedded text or corpus. No retrieval hit rate has been scored, because no precedent pairs are labelled.
 - Retrieval runs as cosine over a local file; AI Search is designed and written but untested and not deployed.
 - Tests that read real HRW text skip themselves when `data/` is absent (CI).

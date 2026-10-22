@@ -254,7 +254,9 @@ function renderHead(item) {
     const all = item.data.precedents;
     const vis = visiblePrecedents(item);
     const diffs = vis.reduce((n, p) => n + p.differences.length, 0);
-    meta.append(el("span", "item-state", vis.length === all.length
+    meta.append(el("span", "item-state", !all.length
+      ? "No sufficiently similar recommendation"
+      : vis.length === all.length
       ? plural(all.length, "prior recommendation", "prior recommendations")
       : `${vis.length} of ${plural(all.length, "prior recommendation", "prior recommendations")}`));
     if (diffs) {
@@ -375,14 +377,21 @@ function fillResults(item) {
   const list = visiblePrecedents(item);
   const results = item.resultsNode;
   results.replaceChildren();
+  const hidden = item.data.hidden_below_threshold || 0;
+  const hiddenNote = hidden
+    ? `${plural(hidden, "weaker candidate was", "weaker candidates were")} hidden by the similarity threshold.`
+    : "";
   if (!list.length) {
     results.append(el("p", "status info", item.data.precedents.length
       ? "No precedents match the current filter."
-      : "No relevant prior recommendations were found."));
+      // wording is deliberate: absence in the indexed reports is not absence in HRW's work (D43)
+      : `No sufficiently similar prior recommendation was found among the indexed reports. `
+        + `This does not mean the topic has never been addressed. ${hiddenNote}`.trim()));
     return;
   }
   const byScore = [...item.data.precedents].sort((a, b) => b.relevance - a.relevance);
   list.forEach((p) => results.append(renderPrecedent(p, byScore.indexOf(p) + 1)));
+  if (hiddenNote) results.append(el("p", "status info", hiddenNote));
 }
 
 function updateItem(item) {
@@ -471,7 +480,15 @@ async function checkItem(item) {
       body: JSON.stringify({ draft_text: item.text, ...item.overrides }),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-    if (!res.ok) throw new Error(`The server responded with HTTP ${res.status}`);
+    if (!res.ok) {
+      let detail = `The server responded with HTTP ${res.status}`;
+      try {
+        const d = (await res.json()).detail;
+        // the server's reason (e.g. an expired Azure login), shortened so it fits on a card
+        if (typeof d === "string" && d) detail = d.length > 300 ? `${d.slice(0, 300)}…` : d;
+      } catch { /* keep the generic message */ }
+      throw new Error(detail);
+    }
     item.data = await res.json();
     item.status = "done";
   } catch (err) {

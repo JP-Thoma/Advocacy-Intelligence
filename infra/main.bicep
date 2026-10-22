@@ -32,13 +32,13 @@ param embeddingModelVersion string = '1'
 @allowed(['Standard', 'DataZoneStandard', 'GlobalStandard'])
 param embeddingSkuName string = 'Standard'
 
-@description('Create Azure AI Search (Basic, fixed hourly cost while it exists). Off by default: turn on deliberately, after raising the budget (see docs/thursday-plan.md).')
+@description('Create Azure AI Search (Basic, fixed hourly cost while it exists). Off by default: turn on deliberately, after raising the budget (see docs/delivery-plan.md).')
 param deploySearch bool = false
 
 var resourceGroupName = 'rg-advocacy-poc'
 var tags = {
   project: 'advocacy-intelligence'
-  purpose: 'interview-poc'
+  purpose: 'poc'
   'delete-after': 'demo'
 }
 
